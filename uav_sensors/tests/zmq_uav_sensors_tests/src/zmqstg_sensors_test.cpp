@@ -2,19 +2,18 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
@@ -26,6 +25,9 @@
 #include <sstream>
 #include <fstream>
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+
 #include "gtest/gtest.h"
 
 #include <klepsydra/core/service.h>
@@ -35,7 +37,6 @@
 
 #include <klepsydra/serialization/json_cereal_mapper.h>
 
-#include <klepsydra/zmq_core/zhelpers.hpp>
 #include <klepsydra/zmq_core/from_zmq_middleware_provider.h>
 #include <klepsydra/zmq_core/to_zmq_middleware_provider.h>
 
@@ -55,12 +56,11 @@ TEST(ZmqSensorsTest, ZmqSensorsTest) {
     publisher.bind("ipc://sensors.ipc");
 
     kpsr::zmq_mdlw::ToZMQMiddlewareProvider toZMQMiddlewareProvider(nullptr, publisher);
-    kpsr::Publisher<kpsr::sensors::LaserScanEvent> * toZMQPublisher = toZMQMiddlewareProvider.getJsonToMiddlewareChannel<kpsr::sensors::LaserScanEvent>(topic, 0);
 
     std::string clientUrl = "tcp://localhost:5556";
 
     //  Socket to talk to server
-    std::cout << "Collecting updates from telemetry server...\n" << std::endl;
+    spdlog::info("Collecting updates from telemetry server...\n");
     zmq::socket_t subscriber (context, ZMQ_SUB);
 
     subscriber.connect(clientUrl);

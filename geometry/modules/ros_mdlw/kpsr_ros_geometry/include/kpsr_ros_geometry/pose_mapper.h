@@ -2,19 +2,18 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
@@ -50,7 +49,7 @@ public:
      */
     void fromMiddleware(const geometry_msgs::Pose & message, kpsr::geometry::PoseEventData & event) {
         kpsr::geometry::ros_mdlw::PoseBuilder::createPoseEvent(
-                    NULL,
+                    "",
                     message.position.x,
                     message.position.y,
                     message.position.z,
@@ -59,8 +58,6 @@ public:
                     message.orientation.z,
                     message.orientation.w,
                     NULL, true, event);
-        event.frameId = message.header.frame_id;
-        event.seq = message.header.seq;
         std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
         event.timestamp = ms.count();
     }
@@ -71,25 +68,20 @@ public:
      * @param message
      */
     void toMiddleware(const kpsr::geometry::PoseEventData & event, geometry_msgs::Pose & message) {
-        std_msgs::Header header;
-        header.seq = event.seq;
-        header.stamp = ros::Time::now();
-        header.frame_id = event.frameId;
+        kpsr::geometry::ros_mdlw::PoseBuilder::createPose(
+            event.x,
+            event.y,
+            event.z,
+            event.qx,
+            event.qy,
+            event.qz,
+            event.qw,
+            event.roll,
+            event.pitch,
+            event.yaw,
+            true,
+            message);
 
-        geometry_msgs::Point point;
-        point.x = event.x;
-        point.y = event.y;
-        point.z = event.z;
-
-        geometry_msgs::Quaternion quaternion;
-        quaternion.x = event.qx;
-        quaternion.y = event.qy;
-        quaternion.z = event.qz;
-        quaternion.w = event.qw;
-
-        message.header = header;
-        message.position = point;
-        message.orientation = quaternion;
     }
 };
 }

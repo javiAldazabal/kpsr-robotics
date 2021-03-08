@@ -2,19 +2,18 @@
 #
 #                           Klepsydra Core Modules
 #              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+#                            All Rights Reserved.
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+#  This file is subject to the terms and conditions defined in
+#  file 'LICENSE.md', which is part of this source code package.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+#  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+#  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+#  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+#  trade secret or copyright law. Dissemination of this information or reproduction of
+#  this material is strictly forbidden unless prior written permission is obtained from
+#  Klepsydra Technologies GmbH.
 #
 #****************************************************************************
 
@@ -55,12 +54,17 @@ else()
 endif()
 message(STATUS "kpsr-build path: " ${KPSR_BUILD_PATH})
 
+if(DEFINED CMAKE_PREFIX_PATH)
+   set(KPSR_LIBRARY_PATH ${CMAKE_PREFIX_PATH}/lib)
+endif()
+
 # Configure variables
 # ------------------------------------------------------------------------------------------------------
 
 # Paths
 SET(CMAKE_MODULE_PATH            ${KPSR_BUILD_PATH}/cmake)
-SET(CMAKE_PREFIX_PATH            ${CMAKE_PREFIX_PATH} ${THIRDPARTIES_PATH})
+SET(LIBRARY_OUTPUT_PATH          ${PROJECT_BINARY_DIR}/bin                   CACHE PATH "Library output" FORCE)
+SET(EXECUTABLE_OUTPUT_PATH       ${PROJECT_BINARY_DIR}/bin                   CACHE PATH "Executable output" FORCE)
 
 # Must use GNUInstallDirs to install libraries into correct
 # locations on all platforms.
@@ -106,6 +110,11 @@ else()
 endif()
 
 add_definitions(-std=c++11)
+add_definitions(-faligned-new)
+add_definitions(-fno-strict-overflow)
+add_definitions(-Wno-deprecated-declarations)
+add_definitions(-Wno-comment)
+
 enable_testing()
 
 if (KPSR_WITH_CODE_METRICS)
@@ -147,7 +156,9 @@ find_package(Threads REQUIRED)
 ######################################################################################
 ADD_SUBDIRECTORY(geometry)
 ADD_SUBDIRECTORY(uav_sensors)
-ADD_SUBDIRECTORY(vision_ocv)
+if (KPSR_WITH_OCV)
+  ADD_SUBDIRECTORY(vision_ocv)
+endif()
 
 if (KPSR_RUNTIME)
 else()
@@ -177,42 +188,39 @@ ENDIF()
 set(DEF_INSTALL_CMAKE_DIR lib/cmake/klepsydrarobotics)
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
 
-# Make relative paths absolute (needed later on)
-foreach(p LIB BIN INCLUDE CMAKE)
-  set(var INSTALL_${p}_DIR)
-  if(NOT IS_ABSOLUTE "${${var}}")
-    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif()
-endforeach()
+if (KPSR_WITH_OCV)
+  # Make relative paths absolute (needed later on)
+  foreach(p LIB BIN INCLUDE CMAKE)
+    set(var INSTALL_${p}_DIR)
+    if(NOT IS_ABSOLUTE "${${var}}")
+      set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+    endif()
+  endforeach()
 
-list (APPEND EXPORT_INCLUDE_DIRS ${CMAKE_INSTALL_FULL_INCLUDEDIR})
-message ("CORE_EXPORT_TARGETS: " ${CORE_EXPORT_TARGETS})
-message ("DDS_EXPORT_TARGETS: " ${DDS_EXPORT_TARGETS})
-message ("ZMQ_EXPORT_TARGETS: " ${ZMQ_EXPORT_TARGETS})
-message ("EXPORT_INCLUDE_DIRS: " ${EXPORT_INCLUDE_DIRS})
-export(TARGETS ${CORE_EXPORT_TARGETS} ${DDS_EXPORT_TARGETS} ${ZMQ_EXPORT_TARGETS} FILE "${PROJECT_BINARY_DIR}/KlepsydraRoboticsTargets.cmake")
+  list (APPEND EXPORT_INCLUDE_DIRS ${CMAKE_INSTALL_FULL_INCLUDEDIR})
+  export(TARGETS ${CORE_EXPORT_TARGETS} ${DDS_EXPORT_TARGETS} ${ZMQ_EXPORT_TARGETS} FILE "${PROJECT_BINARY_DIR}/KlepsydraRoboticsTargets.cmake")
 
-# Export the package for use from the build-tree
-# (this registers the build-tree with a global CMake-registry)
-export(PACKAGE robotics)
+  # Export the package for use from the build-tree
+  # (this registers the build-tree with a global CMake-registry)
+  export(PACKAGE robotics)
 
-# Create the KlepsydraRoboticsConfig.cmake and KlepsydraRoboticsConfigVersion files
-configure_file(KlepsydraRoboticsConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfig.cmake" @ONLY)
+  # Create the KlepsydraRoboticsConfig.cmake and KlepsydraRoboticsConfigVersion files
+  configure_file(KlepsydraRoboticsConfig.cmake.in
+    "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfig.cmake" @ONLY)
 
-configure_file(KlepsydraRoboticsConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/KlepsydraRoboticsConfig.cmake" @ONLY)
-# ... for both
-configure_file(KlepsydraRoboticsConfigVersion.cmake.in
-  "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfigVersion.cmake" @ONLY)
+  configure_file(KlepsydraRoboticsConfig.cmake.in
+    "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/KlepsydraRoboticsConfig.cmake" @ONLY)
+  # ... for both
+  configure_file(KlepsydraRoboticsConfigVersion.cmake.in
+    "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfigVersion.cmake" @ONLY)
 
-# Install the KlepsydraRoboticsConfig.cmake and KlepsydraRoboticsConfigVersion.cmake
-install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/KlepsydraRoboticsConfig.cmake"
-  "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfigVersion.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+  # Install the KlepsydraRoboticsConfig.cmake and KlepsydraRoboticsConfigVersion.cmake
+  install(FILES
+    "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/KlepsydraRoboticsConfig.cmake"
+    "${PROJECT_BINARY_DIR}/KlepsydraRoboticsConfigVersion.cmake"
+    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
-# Install the export set for use with the install-tree
-install(EXPORT KlepsydraRoboticsTargets DESTINATION
-  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
-
+  # Install the export set for use with the install-tree
+  install(EXPORT KlepsydraRoboticsTargets DESTINATION
+    "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+endif()

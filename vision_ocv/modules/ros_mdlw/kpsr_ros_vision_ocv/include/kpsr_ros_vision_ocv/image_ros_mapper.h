@@ -2,19 +2,18 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
@@ -24,6 +23,9 @@
 #include <atomic>
 
 #include "ros/ros.h"
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 #include <image_transport/image_transport.h>
 
@@ -86,15 +88,15 @@ public:
         event.timestamp = ms.count();
 
         cv_bridge::CvImagePtr cvPtr;
-        //std::cout << "ImageFromROS received %i" << message.header.seq << std::endl;
+        //spdlog::info("ImageFromROS received %i{}", message.header.seq);
         try {
             cvPtr = cv_bridge::toCvCopy(message, message.encoding);
         }
         catch (cv_bridge::Exception& e) {
-            std::cerr << "ImageFromROS received. cv_bridge exception: %s" <<  e.what() << std::endl;
+            spdlog::error("ImageFromROS received. cv_bridge exception: %s", e.what());
         }
 
-        //std::cout << "ImageFromROS received. Converting encoding: " << message.encoding << std::endl;
+        //spdlog::info("ImageFromROS received. Converting encoding: {}", message.encoding);
         event.img = cvPtr->image;
     }
 };

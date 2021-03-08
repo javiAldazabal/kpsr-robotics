@@ -2,63 +2,47 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
 #ifndef SIMPLE_READ_SERVICE_H
 #define SIMPLE_READ_SERVICE_H
 
-#include <iostream>
-
 #include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+
+#include <spdlog/spdlog.h>
 
 #include <klepsydra/core/service.h>
 #include <klepsydra/core/subscriber.h>
 
 #include <klepsydra/vision_ocv/image_event_data.h>
 
+namespace kpsr {
+namespace vision_ocv {
 class SimpleReadService : public kpsr::Service
 {
 public:
-    SimpleReadService(kpsr::Environment * environment, kpsr::Subscriber<kpsr::vision_ocv::ImageData> * subscriber)
-        : kpsr::Service(environment, "SimpleReadService")
-        , _subscriber(subscriber)
-    {}
+    SimpleReadService(kpsr::Environment * environment, kpsr::Subscriber<kpsr::vision_ocv::ImageData> * subscriber);
 
-    void start() {
-        std::function<void(kpsr::vision_ocv::ImageData)> simpleListener = std::bind(&SimpleReadService::onEventReceived, this, std::placeholders::_1);
-        this->_subscriber->registerListener("SimpleReadService", simpleListener);
-    }
+    void start();
 
-    void stop() {
-        this->_subscriber->removeListener("SimpleReadService");
-    }
+    void stop();
 
     void execute() {}
 
-    void onEventReceived(const kpsr::vision_ocv::ImageData & event) {
-        std::cout << "SimpleReadService. event received. " << event.seq
-                  << ". image type: " << event.img.type()
-                  << ". image rows: " << event.img.rows
-                  << ". image cols: " << event.img.cols
-                  << std::endl;
-        lastReadImg = event;
-        receivedImage = true;
-    }
+    void onEventReceived(const kpsr::vision_ocv::ImageData & event);
 
     bool receivedImage = false;
     kpsr::vision_ocv::ImageData lastReadImg;
@@ -67,5 +51,7 @@ private:
     kpsr::Subscriber<kpsr::vision_ocv::ImageData> * _subscriber;
     long _startTimestamp;
 };
+}
+}
 
 #endif // SIMPLE_READ_SERVICE_H

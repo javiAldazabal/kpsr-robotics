@@ -2,27 +2,30 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
 #include <klepsydra/mem_vision_ocv/basic_vision_ocv_provider.h>
 
-#include "simple_write_service.h"
+#include <klepsydra/vision_ocv/file_image_stream_service.h>
+
 #include "simple_read_service.h"
 #include "slow_read_service.h"
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 #include "gtest/gtest.h"
 
@@ -32,25 +35,22 @@ TEST(BasicVisionTest, BasicVisionTest) {
     kpsr::vision_ocv::mem::BasicVisionMiddlewareProvider provider(nullptr, 1080, 2040, 16, "body", "raw_image", 4, 6, false);
     provider.underlying->start();
 
-    //std::cout << "Creating services." << std::endl;
+    //spdlog::info("Creating services.");
     kpsr::Publisher<kpsr::vision_ocv::ImageData> * publisher = provider.underlying->getPublisher();
-    SimpleWriteService writeService(nullptr, publisher, TEST_DATA, true);
+    kpsr::vision_ocv::FileImageStreamingService writeService(nullptr, publisher, TEST_DATA, true);
 
     kpsr::Subscriber<kpsr::vision_ocv::ImageData> * subscriber = provider.underlying->getSubscriber();
     SimpleReadService simpleReadService(nullptr, subscriber);
     SlowReadService slowReadService(nullptr, subscriber);
 
-    std::chrono::milliseconds ms1 = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
-    long before = ms1.count();
-
-    //std::cout << "Starting services." << std::endl;
+    //spdlog::info("Starting services.");
     writeService.start();
     simpleReadService.start();
     slowReadService.start();
 
     // Publish some integers.
     for (int i = 0; i < 50; i++) {
-        //std::cout << "Executing services." << std::endl;
+        //spdlog::info("Executing services.");
         writeService.execute();
         simpleReadService.execute();
         slowReadService.execute();

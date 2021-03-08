@@ -2,6 +2,12 @@
   <img width="25%" height="25%"src="./images/klepsydra_logo.jpg">
 </p>
 
+Build | Status
+--- | ---
+Minimal | [![Build Status](https://jenkins1.klepsydra.com/buildStatus/icon?job=kpsr-robotics%2Fmaster)](https://jenkins1.klepsydra.com/job/kpsr-robotics/job/master/)
+ZMQ | [![Build Status](https://jenkins1.klepsydra.com/buildStatus/icon?job=kpsr-zmq-core%2Fmaster)](https://jenkins1.klepsydra.com/view/Core/job/kpsr-zmq-core/job/master/)
+ROS | [![Build Status](https://jenkins1.klepsydra.com/buildStatus/icon?job=kpsr-zmq-robotics%2Fmaster)](https://jenkins1.klepsydra.com/job/kpsr-zmq-robotics/job/master/)
+
 # Installation Instructions
 
 ## System dependencies
@@ -15,7 +21,7 @@
 * gcc for C++11 5.4.0 or above.
 * Doxygen (optional)
 * Moxygen (https://github.com/sourcey/moxygen) (optional)
-* Open CV (Version 3.4.x)
+* Open CV (Version 3.4.x) (optional)
 * Ros Vision Package
 
 ## Klepsydra dependencies
@@ -49,6 +55,7 @@ This will install the klespydra robotics in
 	/opt/klepsydra	
 
 The cmake has the following options:
+* -DKPSR_WITH_OCV=true for building the Open CV vision module
 * -DKPSR_WITH_DDS=true for building the DDS binding
 * -DKPSR_WITH_ZMQ=true for building the ZMQ binding
 * -DKPSR_BUILD_PATH location of the ```kpsr-build``` repository

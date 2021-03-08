@@ -2,27 +2,28 @@
 *
 *                           Klepsydra Core Modules
 *              Copyright (C) 2019-2020  Klepsydra Technologies GmbH
+*                            All Rights Reserved.
 *
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+*  This file is subject to the terms and conditions defined in
+*  file 'LICENSE.md', which is part of this source code package.
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  NOTICE:  All information contained herein is, and remains the property of Klepsydra
+*  Technologies GmbH and its suppliers, if any. The intellectual and technical concepts
+*  contained herein are proprietary to Klepsydra Technologies GmbH and its suppliers and
+*  may be covered by Swiss and Foreign Patents, patents in process, and are protected by
+*  trade secret or copyright law. Dissemination of this information or reproduction of
+*  this material is strictly forbidden unless prior written permission is obtained from
+*  Klepsydra Technologies GmbH.
 *
 *****************************************************************************/
 
 #ifndef LASER_SCAN_EVENT_PUBLISHER_SERVICE_H
 #define LASER_SCAN_EVENT_PUBLISHER_SERVICE_H
 
-#include <iostream>
 #include <random>
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 #include <klepsydra/core/service.h>
 #include <klepsydra/core/publisher.h>
@@ -49,7 +50,7 @@ public:
     void stop() {}
 
     void execute() {
-        std::cout << "LaserScanEventPublisherService.runOnce" << std::endl;
+        spdlog::info("LaserScanEventPublisherService.runOnce");
         sensor.seq = _seq++;
         sensor.frameId = "BODY_FRAME";
         sensor.angle_min = -3.14f;
@@ -68,14 +69,23 @@ public:
         sensor.intensities[1] = (((*dist)(*mt)*intensity));
         sensor.intensities[2] = (((*dist)(*mt)*intensity));
 
-        std::cout << "LaserScanEventPublisherService.runOnce. seq: " << sensor.seq
-                  << ". sensor.frameId: " << sensor.frameId
-                  << ". sensor.angle_min: " << sensor.angle_min
-                  << ". sensor.range_min: " << sensor.range_min
-                  << ". sensor.ranges.size(): " << sensor.ranges.size()
-                  << ". sensor.ranges[0]: " << sensor.ranges[0]
-                  << ". sensor.intensities.size(): " << sensor.intensities.size()
-                  << ". sensor.intensities[0]: " << sensor.intensities[0] << std::endl;
+        spdlog::info("LaserScanEventPublisherService.runOnce. seq: {}"
+                  ". sensor.frameId: {}"
+                  ". sensor.angle_min: {}"
+                  ". sensor.range_min: {}"
+                  ". sensor.ranges.size(): {}"
+                  ". sensor.ranges[0]: {}"
+                  ". sensor.intensities.size(): {}"
+                  ". sensor.intensities[0]: {}",
+                  sensor.seq,
+                  sensor.frameId,
+                  sensor.angle_min,
+                  sensor.range_min,
+                  sensor.ranges.size(),
+                  sensor.ranges[0],
+                  sensor.intensities.size(),
+                  sensor.intensities[0]
+        );
         _publisher->publish(sensor);
     }
 
